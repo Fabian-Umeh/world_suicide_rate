@@ -3,7 +3,7 @@ CHART TYPE Animated Bubble Plot
 # PURPOSE 
 ​ To decipher any possible relationship between suicide rate and the economic status of countries
 # FUNCTIONALITY
-​ Linear Transition
+Linear Transition
 ​ Tooltips
 ​ Legend
 ​ Mouse hover

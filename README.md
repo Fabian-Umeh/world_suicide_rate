@@ -1,4 +1,6 @@
 # Suicide_vs_GDP
+![Screenshot 2022-09-29 020446](https://user-images.githubusercontent.com/101877617/192915392-0b59f9de-159f-40e9-938f-1fffbdea8aaf.png)
+
 CHART TYPE Animated Bubble Plot
 # PURPOSE 
 ​ To decipher any possible relationship between suicide rate and the economic status of countries

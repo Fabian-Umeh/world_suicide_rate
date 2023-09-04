@@ -1,4 +1,5 @@
 
+![Suicide rate - Trim (1)](https://github.com/Fabian-Umeh/world_suicide_rate/assets/101877617/bc73dac7-2b01-404e-a509-6c458c22be45)
 # Suicide Rate vs GDP Analysis
 
 ## Overview
@@ -25,7 +26,7 @@ This JSON file contains the data used for the analysis. It presumably includes v
 
 ## [ICA-B1652341.html](./ICA-B1652341.html)
 ### Summary
-This HTML file appears to be a report or detailed analysis document that complements the data in the JSON file.
+This HTML file contains the web rendered visuals that complements the data in the JSON file.
 
 #### Highlights
 - **Report**: HTML-based report likely containing visualizations and textual explanations.

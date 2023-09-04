@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
+
+    <title>Suicide Rate Vs GDP</title>
+
+
+</head>
+
+<body>
+    <!-- Authur's detail -->
+
+    <img class="chart-image" src="teesside.png">
+    <h1 class="htext">Bubble chart showing the correlation between Suicide Rate and GDP</h1>
+    <h3 class="htext">Teesside University School Of Computing</h3>
+    <h4 class="htext">Interactive Visualization CIS4014-N<br><br></h4>
+    <h5 class="itext">Name and ID: Fabian Chukwunonso Umeh B1652341</h5>
+    <h5 class="itext">Credits: Jeffrey Heer (Observablehq), Mike Bostock (Observablehq), Mrs. Joanne Noble and Mr. Mead
+        Steven (Lecture codes)</h5>
+    <form
+        style="font: 12px var(--sans-serif); font-variant-numeric: tabular-nums; display: flex; height: 33px; align-items: center;">
+        <button class="button-class" name="b" type="button" style="margin-right: 0.4em; width: 5em;" ,
+            id="play">Play</button>
+        <label style="display: flex; align-items: center;">
+
+            <output id="name" style="margin-left: 0.4em;"></output>
+        </label>
+    </form>
+    <style>
+        .chart-image {
+            margin-left: 50em;
+        }
+
+        .button-class {
+            margin-left: 39em;
+            background-color: rgb(26, 172, 26);
+        }
+
+        .itext {
+            text-indent: 513px;
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        }
+
+        .htext {
+            text-align: center;
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        }
+
+        .svg-style {
+            background-color: white;
+            display: block;
+            margin: auto;
+        }
+    </style>
+    <script>
+        // **************** Credits to Jeffrey Heer and Mike Bostock whose code has been replocated to create this chart ******************
+        // **************** Credits also to Mrs. Joanne Noble and Mr. Mead Steven whose code has also been used in this chart ******************
+        d3.json("Suicide_vs_GDP.json").then(function (data) {
+
+
+            // SVG container and element defining parameters
+            const years = [... new Set(d3.map(data, function (d) { return d.Year; }))];
+            const height = 400
+            const width = 900
+            const margin = ({ top: 20, right: 20, bottom: 30, left: 50 })
+            const graphWidth = width - margin.left - margin.right,
+                graphHeight = height - margin.top - margin.bottom;
+
+            // Xscale
+            xScale = d3.scaleLog()
+                .domain(d3.extent(data, function (d) { return d.GDP; }))
+                .range([margin.left, width - margin.right])
+                .nice()
+
+            // Yscale
+            yScale = d3.scaleLinear()
+                .domain(d3.extent(data, function (d) { return d.Suirate; }))
+                .range([graphHeight, margin.top])
+                .nice()
+
+            // colorscale
+            color = d3.scaleOrdinal()
+                .domain(d3.map(data, function (d) { d.cluster }))
+                .range(d3.schemeSet1)
+
+            // radii size scale
+            size = d3.scaleSqrt()
+                .domain(d3.extent(data, function (d) { return d.pop }))
+                .range([2, 35]) // output radii range from 2 to 35 pixels since we have very large values
+
+
+
+
+            // create the container SVG element
+            const svg = d3.select('body')
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height)
+                .attr("viewBox", [0, 0, width, height])
+                .attr("class", "svg-style");
+
+            // create SVG group 
+            const graphGroup =
+                svg.append('g')
+
+            // Define XAxis
+            const xAxis = svg.append('g')
+                .attr("transform", `translate(0,${graphHeight + 15})`)
+                .call(d3.axisBottom(xScale).ticks(width / 100))
+                .call(graphGroup => graphGroup.select(".domain").remove())
+                .call(graphGroup => graphGroup.append("text")
+                    .attr("x", graphWidth + margin.left)
+                    .attr("y", margin.bottom)
+                    .attr("fill", "currentColor")
+                    .attr("text-anchor", "end")
+                    .text("Gross Domestic Product (dollars) →"))
+
+            // Define YAxis
+            const yAxis = svg.append('g')
+                .attr("transform", `translate(${margin.left - 10},0)`)
+                .call(d3.axisLeft(yScale))
+                .call(graphGroup => graphGroup.select(".domain").remove())  // <-- Removes the axis line
+                .call(graphGroup => graphGroup.append("text")
+                    .attr("x", -margin.left + margin.right)
+                    .attr("y", 10)
+                    .attr("fill", "currentColor")
+                    .attr("text-anchor", "start")
+                    .text("↑ Suicide Rate (Per 100,000)"))
+
+            // Define Grid
+            const grid = svg.append('g')
+                .attr("stroke", "currentColor")
+                .attr("stroke-opacity", 0.1)
+                .call(graphGroup => graphGroup.append("g")
+                    .selectAll("line")
+                    .data(xScale.ticks())
+                    .join("line")
+                    .attr("x1", function (d) { return 0.5 + xScale(d) })
+                    .attr("x2", function (d) { return 0.5 + xScale(d) })
+                    .attr("y1", margin.top)
+                    .attr("y2", height - margin.bottom))
+                .call(graphGroup => graphGroup.append("g")
+                    .selectAll("line")
+                    .data(yScale.ticks())
+                    .join("line")
+                    .attr("y1", function (d) { return 0.5 + yScale(d) })
+                    .attr("y2", function (d) { return 0.5 + yScale(d) })
+                    .attr("x1", margin.left - 10)
+                    .attr("x2", width - margin.right));
+
+
+
+            // Define a background label for the current year.
+            const yearLabel = svg.append('text')
+                .attr('class', 'year')
+                .attr('x', 350)
+                .attr('y', height - margin.bottom - 290)
+                .attr('fill', '#ccc')
+                .attr('font-family', 'Helvetica Neue, Arial')
+                .attr('font-weight', 250)
+                .attr('font-size', 80)
+
+            const selmodel = SelectionModel() // <-- Instantiate a selection model a function by (Jeffrey Heer)
+
+            // Invoking Lagend
+            const legend = svg.append('g')
+                .attr('transform', 'translate(0, 10)')
+                .call(container => Legend(container, selmodel));
+
+            // Our selection model wraps two components:
+            // - A JavaScript Set for tracking the selected elements
+            // - A D3 dispatch helper for registering and invoking listener callbacks upon changes
+
+            function SelectionModel(values) {      // <-- a function by (Jeffrey Heer)
+                const dispatch = d3.dispatch('change');
+                const state = new Set(values);
+
+                const api = {
+                    on: (type, fn) => (dispatch.on(type, fn), api),
+                    clear: () => (clear(), api),
+                    has: value => !state.size || state.has(value),
+                    set: value => (update(value, true), api),
+                    toggle: value => (update(value, !state.has(value)), api)
+                };
+
+                function clear() {
+                    if (state.size) {
+                        state.clear();
+                        dispatch.call('change', api, api);
+                    }
+                }
+
+                function update(value, add) {
+                    if (add && !state.has(value)) {
+                        state.add(value);
+                        dispatch.call('change', api, api);
+                    } else if (!add && state.has(value)) {
+                        state.delete(value);
+                        dispatch.call('change', api, api);
+                    }
+                }
+
+                return api;
+            }
+
+
+            // Defining Container to handle legend selection
+
+            // container is a d3 selection for the container group (<g>) element
+            // selmodel is a selection model instance for tracking selected legend entries
+            function Legend(container, selmodel) {
+                const regions = [
+                    { index: 0, label: 'Europe' },
+                    { index: 1, label: 'Africa' },
+                    { index: 2, label: 'South America' },
+                    { index: 4, label: 'Asia' },
+                    { index: 5, label: 'North America' },
+                    { index: 6, label: 'Oceania' }
+                ];
+                const titlePadding = 14;  // padding between title and entries
+                const entrySpacing = 16;  // spacing between legend entries
+                const entryRadius = 5;    // radius of legend entry marks
+                const labelOffset = 4;    // additional horizontal offset of text labels
+                const baselineOffset = 4; // text baseline offset, depends on radius and font size
+
+
+
+                const title = container.append('text')
+                    .attr('x', 790)
+                    .attr('y', 0)
+                    .attr('fill', 'black')
+                    .attr('font-family', 'Helvetica Neue, Arial')
+                    .attr('font-weight', 'bold')
+                    .attr('font-size', '12px')
+                    .text('Region');
+
+                // The "on" method registers event listeners
+                // We update the selection model in response
+                // for continent selection
+                const entries = container.selectAll('g')
+                    .data(regions)
+                    .join('g')
+                    .attr('transform', function (d) { return `translate(0, ${titlePadding + d.index * entrySpacing})` })
+                    .on('click', function (d, i) { return selmodel.toggle(i.index) }) // <-- respond to clicks
+                    .on('dblclick', () => selmodel.clear());
+
+                const symbols = entries.append('circle')
+                    .attr('cy', baselineOffset)
+                    .attr('cx', 790 + entryRadius) // <-- offset symbol x-position by radius
+                    .attr('r', entryRadius)
+                    .attr('fill', function (d) { return color(d.index) });
+
+                const labels = entries.append('text')
+                    .attr('x', 2 * entryRadius + labelOffset + 790) // <-- place labels to the left of symbols
+                    .attr('y', baselineOffset + 3) // <-- adjust label y-position for proper alignment
+                    .attr('fill', 'black')
+                    .attr('font-family', 'Helvetica Neue, Arial')
+                    .attr('font-size', '11px')
+                    .text(function (d) { return d.label });
+
+                selmodel.on('change.legend', () => {
+                    symbols.attr('fill', function (d) { return selmodel.has(d.index) ? color(d.index) : '#ccc' });
+                });
+
+
+            }
+
+
+
+            // Function to Display Chart
+
+            function displayChart(year) {
+
+                yearLabel.text(year);
+
+
+                const countries = svg
+                    .selectAll('circle')
+                    .data(data.filter(function (d) { return d.Year === year }), function (d) { return d.country })
+
+
+                countries
+                    .transition()         // <-- akin to a D3 selection, but interpolates values
+                    .duration(1000)     // <-- 1000 ms === 1 sec
+                    .ease(d3.easeLinear)
+                    .attr('cx', function (d) { return xScale(d.GDP) })
+                    .attr('cy', function (d) { return yScale(d.Suirate) })
+                    .attr('r', function (d) { return size(d.pop) });
+
+                countries
+                    .enter()
+                    .append('circle')
+                    .join('circle')
+                    .attr('class', 'country')
+                    .attr('opacity', 0.75)
+                    .attr('fill', function (d) { return color(d.cluster) })
+                    .attr('cx', function (d) { return xScale(d.GDP) })
+                    .attr('cy', function (d) { return yScale(d.Suirate) })
+                    .attr('r', function (d) { return size(d.pop) })
+                    .transition()         // <-- akin to a D3 selection, but interpolates values
+                    .duration(1000)     // <-- 1000 ms === 1 sec
+                    .ease(d3.easeLinear)
+                    .attr('cx', function (d) { return xScale(d.GDP) })
+                    .attr('cy', function (d) { return yScale(d.Suirate) })
+                    .attr('r', function (d) { return size(d.pop) });
+
+
+                // add a tooltip
+                svg.selectAll('circle')
+                    .append('title')
+                    .text(function (d) { return d.country });
+
+
+
+                // Add mouse hover interactions, using D3 to update attributes directly.
+                // In a stand-alone context, we could also use stylesheets with 'circle:hover'.
+                svg.selectAll('circle')
+                    // The 'on()' method registers an event listener function
+                    .on('mouseover', function () {
+                        d3.select(this).attr('stroke', '#333').attr('stroke-width', 2);
+                    })
+                    .on('mouseout', function () {
+                        // Setting the stroke color to null removes it entirely.
+                        d3.select(this).attr('stroke', null);
+                    });
+
+                // Add a selection model listener that updates country colors
+                // We name the event 'change.chart' as this is the chart's own internal listener.
+                selmodel.on('change.chart', () => {
+                    svg
+                        .selectAll('circle')
+                        .data(data.filter(function (d) { return d.Year === year }), function (d) { return d.country })
+                        .attr('fill', function (d) { return selmodel.has(d.cluster) ? color(d.cluster) : '#ccc' });
+                });
+
+            }
+
+
+            // Animating chart
+
+            let yearIndex = 0;
+
+            // Display the first year
+            displayChart(years[yearIndex++]);
+
+
+            d3.select('#play').on('click', function () {
+
+                const animationTimer = d3.interval(
+                    function () {
+                        const nextYear = years[yearIndex += 3];
+                        displayChart(nextYear);
+
+
+
+                        // When the last year is reached, stop the timer (or reset to the beginning)
+                        if (nextYear === years[years.length - 1]) {
+                            animationTimer.stop();
+
+                            yearIndex = 0; // <-- would restart the process.
+                        }
+
+                    },
+                    1500  //<--- Transition duration 1500ms === 1.5s
+                );
+            })
+
+        });
+
+
+
+    </script>
+</body>
+
+</html>
